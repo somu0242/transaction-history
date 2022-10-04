@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -79,21 +80,21 @@ public class TransactionService {
 	}
 
 	public List<Transaction> getRewardsInrange(Long userId, String fromDate, String toDate) throws ParseException {
-		SimpleDateFormat format=new SimpleDateFormat("MM-dd-yyyy");
-
+		SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy");
 		return transactionRepository.getRewardsInrange(userId,format.parse(fromDate),format.parse(toDate));
 	}
 
 	public RewardResponse getTotalRewardsInrange(Long userId, String fromDate, String toDate) throws ParseException {
 		User user=userRepository.findById(userId)
 				.orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
-		List<Transaction> trans=getRewardsInrange(userId,fromDate,toDate);
-
-		RewardResponse rewardResponse=new RewardResponse();
-		rewardResponse.setTotalTransactionAmount(trans.stream().mapToLong(Transaction::getItemCost).sum());
-		rewardResponse.setTotalRewardPoints(trans.stream().mapToLong(Transaction::getRewardPoints).sum());
-		rewardResponse.setUserId(userId);
-		rewardResponse.setUserName(user.getUserName());
+		List<Transaction> trans = getRewardsInrange(userId,fromDate,toDate);
+		RewardResponse rewardResponse = new RewardResponse();
+		Optional.ofNullable(trans).ifPresent(transactionData ->{
+			rewardResponse.setTotalTransactionAmount(transactionData.stream().mapToLong(Transaction::getItemCost).sum());
+			rewardResponse.setTotalRewardPoints(transactionData.stream().mapToLong(Transaction::getRewardPoints).sum());
+			rewardResponse.setUserId(userId);
+			rewardResponse.setUserName(user.getUserName());
+			});
 		return rewardResponse;
 	}
 
