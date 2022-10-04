@@ -7,7 +7,7 @@ Build a Rewards API using Spring Boot, H2 DB , JPA, Swagger Rest API
 
 ## Requirements
 
-1. Java - 1.8.x
+1. Java - 13
 2. Maven - 3.x.x
 
 ## Steps to Setup
